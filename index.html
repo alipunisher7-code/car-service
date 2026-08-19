@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>دفترچه سرویس خودرو</title>
+<meta name="description" content="ثبت و پیگیری تعویض روغن، فیلتر، تسمه و سایر سرویس‌های خودرو بر اساس کیلومتر">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#232922">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="دفترچه سرویس">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#e8e9df;
+    --bg-deep:#dfe1d3;
+    --surface:#f8f8f2;
+    --surface-2:#ffffff;
+    --ink:#232922;
+    --ink-soft:#616a5c;
+    --ink-faint:#9aa192;
+    --line:#c9cbb6;
+    --line-strong:#b3b69c;
+    --brass:#b9862e;
+    --brass-deep:#8c6420;
+    --brass-bg:#f1e3c4;
+    --stamp-red:#a6342c;
+    --stamp-red-bg:#f3ddd9;
+    --ok-green:#3e6b4c;
+    --ok-green-bg:#e1e9df;
+    --shadow: 0 3px 14px rgba(35,41,34,0.10);
+    --shadow-sm: 0 1px 4px rgba(35,41,34,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,255,255,0.5), transparent 40%),
+      var(--bg-deep);
+    color:var(--ink);
+    font-family:'Vazirmatn', Tahoma, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+  }
+  .app{
+    width:100%;
+    max-width:520px;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 40px rgba(0,0,0,0.12);
+  }
+  /* ---------- header ---------- */
+  header.top{
+    padding:22px 20px 16px;
+    background:var(--surface);
+    border-bottom:1px dashed var(--line-strong);
+    position:relative;
+  }
+  header.top::after{
+    content:"";
+    position:absolute; inset-inline:0; bottom:-1px; height:1px;
+  }
+  .brand-row{display:flex; align-items:center; gap:10px;}
+  .brand-mark{
+    width:38px;height:38px;border-radius:9px;
+    background:var(--ink); color:var(--brass-bg);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace; font-weight:700; font-size:15px;
+    flex-shrink:0;
+  }
+  h1.brand-title{font-size:19px; font-weight:800; margin:0; letter-spacing:-.2px;}
+  .brand-sub{font-size:12px; color:var(--ink-soft); margin-top:1px;}
+
+  /* vehicle switcher bar */
+  .vehicle-bar{
+    display:flex; align-items:center; gap:10px; cursor:pointer;
+    background:var(--surface); border-bottom:1px dashed var(--line-strong);
+    padding:11px 20px 13px;
+  }
+  .vehicle-bar-icon{
+    width:30px;height:30px;border-radius:8px; background:var(--brass-bg); color:var(--brass-deep);
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .vehicle-bar-text{flex:1; min-width:0;}
+  .vehicle-bar-label{font-size:10.5px; color:var(--ink-faint); font-weight:700;}
+  .vehicle-bar-name{font-size:14px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .vehicle-bar-chev{color:var(--ink-faint); flex-shrink:0;}
+  .veh-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; margin-bottom:8px; cursor:pointer;
+  }
+  .veh-row.is-active{border-color:var(--brass); box-shadow:0 0 0 1px var(--brass) inset;}
+  .veh-name-row{display:flex; align-items:center; gap:8px;}
+  .veh-name{font-weight:700; font-size:14px;}
+  .veh-plate{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .active-tag{
+    font-size:10px; font-weight:800; color:var(--ok-green); background:var(--ok-green-bg);
+    border-radius:6px; padding:2px 7px;
+  }
+
+  /* ---------- main / views ---------- */
+  main{flex:1; padding:18px 16px 90px; overflow-y:auto;}
+  .view{display:none; animation:fadeIn .25s ease;}
+  .view.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+  .section-label{
+    font-size:12px; font-weight:700; color:var(--ink-soft);
+    display:flex; align-items:center; gap:8px; margin:22px 2px 10px;
+  }
+  .section-label:first-child{margin-top:0;}
+  .section-label::after{content:""; flex:1; border-top:1px dashed var(--line-strong);}
+
+  /* odometer digits — signature element */
+  .odo{
+    display:inline-flex; direction:ltr; gap:2px; vertical-align:middle;
+  }
+  .odo-d{
+    font-family:'Space Mono', ui-monospace, Menlo, Consolas, monospace;
+    font-weight:700; font-variant-numeric:tabular-nums;
+    background:var(--ink); color:var(--brass-bg);
+    border-radius:3px; padding:3px 1px; text-align:center;
+  }
+  .odo.lg .odo-d{ min-width:22px; font-size:26px; padding:6px 2px;}
+  .odo.md .odo-d{ min-width:15px; font-size:16px; padding:3px 2px;}
+  .odo.sm .odo-d{ min-width:11px; font-size:12px; padding:2px 1px; border-radius:2px;}
+  .odo-unit{font-size:12px; color:var(--ink-soft); margin-inline-start:6px; align-self:center;}
+
+  /* hero km card */
+  .km-card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:18px 18px 16px; box-shadow:var(--shadow);
+  }
+  .km-card .lbl{font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .km-row{display:flex; align-items:baseline; justify-content:space-between; margin-top:6px; flex-wrap:wrap; gap:8px;}
+  .km-meta{font-size:11px; color:var(--ink-faint); margin-top:8px;}
+  .btn{
+    border:none; cursor:pointer; font-family:inherit; font-weight:700;
+    border-radius:10px; padding:10px 16px; font-size:13.5px;
+    transition:transform .08s ease, opacity .15s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn-brass{background:var(--brass); color:#2a2010;}
+  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--line-strong);}
+  .btn-ink{background:var(--ink); color:var(--brass-bg);}
+  .btn-danger{background:var(--stamp-red-bg); color:var(--stamp-red);}
+  .btn-block{width:100%;}
+  .btn-sm{padding:6px 10px; font-size:12px; border-radius:8px;}
+
+  /* stamp badge */
+  .stamp{
+    display:inline-flex; align-items:center; gap:5px;
+    border:2px dashed currentColor; border-radius:8px;
+    padding:3px 9px; font-size:11px; font-weight:800;
+    transform:rotate(-3deg); white-space:nowrap;
+  }
+  .stamp.overdue{color:var(--stamp-red); background:var(--stamp-red-bg);}
+  .stamp.soon{color:var(--brass-deep); background:var(--brass-bg);}
+  .stamp.ok{color:var(--ok-green); background:var(--ok-green-bg);}
+  .stamp.none{color:var(--ink-faint); background:var(--surface-2); border-style:dotted; transform:rotate(0);}
+
+  /* alert / service cards */
+  .alert-card{
+    background:var(--surface-2); border:1px solid var(--line);
+    border-radius:14px; padding:14px 14px; margin-bottom:10px;
+    box-shadow:var(--shadow-sm);
+  }
+  .alert-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .alert-title{font-weight:700; font-size:14.5px;}
+  .alert-sub{font-size:11.5px; color:var(--ink-soft); margin-top:3px;}
+  .bar-track{height:6px; background:var(--bg-deep); border-radius:99px; margin-top:11px; overflow:hidden;}
+  .bar-fill{height:100%; border-radius:99px;}
+  .bar-fill.overdue{background:var(--stamp-red);}
+  .bar-fill.soon{background:var(--brass);}
+  .bar-fill.ok{background:var(--ok-green);}
+  .bar-fill.none{background:var(--ink-faint);}
+  .empty{
+    text-align:center; color:var(--ink-faint); font-size:13px;
+    padding:34px 10px; border:1px dashed var(--line-strong); border-radius:14px;
+  }
+
+  /* forms */
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:6px;}
+  .field input[type=text], .field input[type=number], .field textarea, .field select{
+    width:100%; border:1px solid var(--line-strong); background:var(--surface-2);
+    border-radius:10px; padding:10px 12px; font-family:inherit; font-size:14px; color:var(--ink);
+  }
+  .field textarea{resize:vertical; min-height:60px;}
+  .date-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
+  .card-form{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:14px; padding:16px; box-shadow:var(--shadow-sm);
+  }
+  .hint{font-size:11.5px; color:var(--ink-faint); margin-top:-6px; margin-bottom:14px;}
+
+  /* service list rows */
+  .svc-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; margin-bottom:8px;
+  }
+  .svc-name{font-weight:700; font-size:14px;}
+  .svc-interval{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .row-actions{display:flex; gap:6px; flex-shrink:0;}
+  .icon-btn{
+    width:30px;height:30px;border-radius:8px;border:1px solid var(--line-strong);
+    background:var(--surface-2); cursor:pointer; display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft);
+  }
+  .icon-btn.danger{color:var(--stamp-red); border-color:#e2bdb8;}
+
+  /* history */
+  .hist-group-lbl{font-size:12px; font-weight:800; color:var(--ink-soft); margin:20px 2px 8px;}
+  .hist-item{
+    display:flex; gap:10px; align-items:flex-start;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:12px;
+    padding:11px 13px; margin-bottom:8px;
+  }
+  .hist-dot{width:9px;height:9px;border-radius:50%; margin-top:5px; flex-shrink:0;}
+  .hist-dot.svc{background:var(--brass);}
+  .hist-dot.km{background:var(--ok-green);}
+  .hist-title{font-weight:700; font-size:13.5px;}
+  .hist-sub{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+  .hist-actions{margin-inline-start:auto; display:flex; gap:6px; flex-shrink:0;}
+
+  /* bottom nav */
+  nav.bottom{
+    position:absolute; bottom:0; inset-inline:0;
+    background:var(--surface); border-top:1px solid var(--line);
+    display:flex; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+    max-width:520px; margin:0 auto;
+  }
+  nav.bottom button{
+    flex:1; background:none; border:none; cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:6px 2px; color:var(--ink-faint); font-size:10.5px; font-weight:700; border-radius:10px;
+  }
+  nav.bottom button.active{color:var(--brass-deep); background:var(--brass-bg);}
+  nav.bottom svg{width:20px; height:20px;}
+
+  /* modal */
+  .overlay{
+    position:absolute; inset:0; background:rgba(35,41,34,0.42);
+    display:none; align-items:flex-end; justify-content:center; z-index:20;
+  }
+  .overlay.show{display:flex;}
+  .sheet{
+    width:100%; max-width:520px; background:var(--surface);
+    border-radius:20px 20px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom));
+    box-shadow:0 -6px 24px rgba(0,0,0,0.2); animation:slideUp .22s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(24px); opacity:.4;} to{transform:none; opacity:1;}}
+  .sheet-title{font-weight:800; font-size:16px; margin-bottom:14px;}
+  .toast{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--brass-bg); font-size:12.5px; font-weight:700;
+    padding:9px 16px; border-radius:99px; box-shadow:var(--shadow); z-index:30;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, top .2s ease;
+  }
+  .toast.show{opacity:1; top:26px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <div class="brand-row" style="justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="brand-mark">۱۲۳</div>
+        <div>
+          <h1 class="brand-title">دفترچه سرویس خودرو</h1>
+          <div class="brand-sub">تعویض روغن، فیلتر، تسمه و سایر سرویس‌ها را زیر نظر داشته باشید</div>
+        </div>
+      </div>
+      <button class="icon-btn" id="btn-open-settings" style="width:34px;height:34px; flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="vehicle-bar" id="btn-open-vehicles">
+    <div class="vehicle-bar-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-2l2-5a2 2 0 0 1 2-1h6a2 2 0 0 1 2 1l2 5v2a2 2 0 0 1-2 2M5 17a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2M17 17a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2"/></svg>
+    </div>
+    <div class="vehicle-bar-text">
+      <div class="vehicle-bar-label">خودرو</div>
+      <div class="vehicle-bar-name" id="active-vehicle-name">—</div>
+    </div>
+    <svg class="vehicle-bar-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+  </div>
+
+  <main>
+
+    <!-- HOME -->
+    <section class="view active" id="view-home">
+      <div class="km-card">
+        <div class="lbl">کیلومتر فعلی خودرو</div>
+        <div class="km-row">
+          <span class="odo lg" id="home-km-odo"></span>
+          <button class="btn btn-brass btn-sm" id="btn-open-km">به‌روزرسانی</button>
+        </div>
+        <div class="km-meta" id="home-km-meta">—</div>
+      </div>
+
+      <div class="section-label">وضعیت سرویس‌ها</div>
+      <div id="alerts-list"></div>
+    </section>
+
+    <!-- ADD RECORD -->
+    <section class="view" id="view-add">
+      <div class="section-label" id="rec-form-label">ثبت تعویض جدید</div>
+      <div class="card-form">
+        <div class="field">
+          <label>نوع خدمت</label>
+          <select id="rec-service"></select>
+        </div>
+        <div class="hint" id="rec-service-hint"></div>
+
+        <div class="field">
+          <label>تاریخ تعویض</label>
+          <div class="date-grid">
+            <select id="rec-day"></select>
+            <select id="rec-month"></select>
+            <select id="rec-year"></select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>کیلومتر در زمان تعویض</label>
+          <input type="number" id="rec-km" placeholder="مثلاً ۴۵۰۰۰" inputmode="numeric">
+        </div>
+
+        <div class="field">
+          <label>یادداشت (اختیاری)</label>
+          <textarea id="rec-note" placeholder="مثلاً نوع روغن، مکانیک، ..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost btn-block" id="btn-cancel-edit-record" style="display:none;">انصراف</button>
+          <button class="btn btn-ink btn-block" id="btn-save-record">ثبت تعویض</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section class="view" id="view-services">
+      <div class="section-label">خدمات تعریف‌شده</div>
+      <div id="services-list"></div>
+
+      <div class="section-label" id="svc-form-label">افزودن خدمت جدید</div>
+      <div class="card-form">
+        <div class="field">
+          <label>عنوان خدمت</label>
+          <input type="text" id="svc-title" placeholder="مثلاً تعویض روغن موتور">
+        </div>
+        <div class="field">
+          <label>حد مجاز مصرف قطعه (کیلومتر)</label>
+          <input type="number" id="svc-interval" placeholder="مثلاً ۵۰۰۰" inputmode="numeric">
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost btn-block" id="btn-cancel-edit-service" style="display:none;">انصراف</button>
+          <button class="btn btn-brass btn-block" id="btn-save-service">افزودن خدمت</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="view" id="view-history">
+      <div class="section-label">تاریخچه کامل</div>
+      <div id="history-list"></div>
+    </section>
+
+    <!-- edit record sheet content lives in overlays below -->
+
+  </main>
+
+  <nav class="bottom">
+    <button data-view="home" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      خانه
+    </button>
+    <button data-view="add">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      تعویض جدید
+    </button>
+    <button data-view="services">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-3 3-2-2z"/></svg>
+      خدمات
+    </button>
+    <button data-view="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      تاریخچه
+    </button>
+  </nav>
+
+  <!-- km update modal -->
+  <div class="overlay" id="km-overlay">
+    <div class="sheet">
+      <div class="sheet-title" id="km-sheet-title">به‌روزرسانی کیلومتر فعلی</div>
+      <div class="field">
+        <label>تاریخ</label>
+        <div class="date-grid">
+          <select id="km-day"></select>
+          <select id="km-month"></select>
+          <select id="km-year"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>کیلومتر</label>
+        <input type="number" id="km-value" inputmode="numeric" placeholder="مثلاً ۴۶۲۰۰">
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-ghost btn-block" id="btn-cancel-km">انصراف</button>
+        <button class="btn btn-brass btn-block" id="btn-confirm-km">ثبت</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- vehicles: switch / add / edit / delete -->
+  <div class="overlay" id="vehicles-overlay">
+    <div class="sheet">
+      <div class="sheet-title">خودروهای من</div>
+      <div id="vehicles-list" style="margin-bottom:18px;"></div>
+
+      <div class="section-label" id="veh-form-label" style="margin-top:0;">افزودن خودروی جدید</div>
+      <div class="field">
+        <label>نام خودرو</label>
+        <input type="text" id="veh-title" placeholder="مثلاً پراید ۱۴۰۳ یا ماشین شخصی">
+      </div>
+      <div class="field">
+        <label>پلاک (اختیاری)</label>
+        <input type="text" id="veh-plate" placeholder="مثلاً ۱۲ ایران ۳۴۵ ب ۶۷">
+      </div>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <button class="btn btn-ghost btn-block" id="btn-cancel-edit-vehicle" style="display:none;">انصراف</button>
+        <button class="btn btn-brass btn-block" id="btn-save-vehicle">افزودن خودرو</button>
+      </div>
+
+      <button class="btn btn-ghost btn-block" id="btn-close-vehicles">بستن</button>
+    </div>
+  </div>
+
+  <!-- settings / backup & restore -->
+  <div class="overlay" id="settings-overlay">
+    <div class="sheet">
+      <div class="sheet-title">تنظیمات و پشتیبان‌گیری</div>
+
+      <div class="field" style="margin-bottom:10px;">
+        <label>پشتیبان‌گیری</label>
+        <div class="hint" style="margin-bottom:10px;">یک فایل شامل تمام خدمات، تعویض‌ها و سوابق کیلومتر دانلود می‌شود. آن را جایی امن نگه دارید.</div>
+        <button class="btn btn-ink btn-block" id="btn-export-backup">دریافت فایل پشتیبان</button>
+      </div>
+
+      <div class="field">
+        <label>بازیابی از فایل پشتیبان</label>
+        <div class="hint" style="margin-bottom:10px;">با انتخاب فایل، اطلاعات فعلی برنامه با محتوای فایل جایگزین می‌شود.</div>
+        <input type="file" id="input-restore-backup" accept="application/json,.json" style="display:none;">
+        <button class="btn btn-ghost btn-block" id="btn-restore-backup">انتخاب فایل و بازیابی</button>
+      </div>
+
+      <button class="btn btn-ghost btn-block" id="btn-close-settings" style="margin-top:6px;">بستن</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ============ Jalali <-> Gregorian ============ */
+function g2j(gy, gm, gd) {
+  var g_d_m = [0,31,59,90,120,151,181,212,243,273,304,334];
+  var jy = (gy <= 1600) ? 0 : 979;
+  gy -= (gy <= 1600) ? 621 : 1600;
+  var gy2 = (gm > 2) ? (gy + 1) : gy;
+  var days = (365*gy) + parseInt((gy2+3)/4) - parseInt((gy2+99)/100) + parseInt((gy2+399)/400) - 80 + gd + g_d_m[gm-1];
+  jy += 33*parseInt(days/12053); days %= 12053;
+  jy += 4*parseInt(days/1461); days %= 1461;
+  if (days > 365) { jy += parseInt((days-1)/365); days = (days-1)%365; }
+  var jm, jd;
+  if (days < 186) { jm = 1 + parseInt(days/31); jd = 1 + (days%31); }
+  else { jm = 7 + parseInt((days-186)/30); jd = 1 + ((days-186)%30); }
+  return [jy, jm, jd];
+}
+function j2g(jy, jm, jd) {
+  jy += 1595;
+  var days = -355668 + (365*jy) + (parseInt(jy/33)*8) + parseInt(((jy%33)+3)/4) + jd + ((jm<7)?(jm-1)*31:((jm-7)*30)+186);
+  var gy = 400*parseInt(days/146097); days %= 146097;
+  if (days > 36524) { gy += 100*parseInt(--days/36524); days %= 36524; if (days >= 365) days++; }
+  gy += 4*parseInt(days/1461); days %= 1461;
+  if (days > 365) { gy += parseInt((days-1)/365); days = (days-1)%365; }
+  var gd = days + 1;
+  var leap = (gy%4===0 && gy%100!==0) || gy%400===0;
+  var sal_a = [0,31, leap?29:28, 31,30,31,30,31,31,30,31,30,31];
+  var gm;
+  for (gm=1; gm<=12; gm++) { if (gd <= sal_a[gm]) break; gd -= sal_a[gm]; }
+  return [gy, gm, gd];
+}
+function isLeapJalali(jy){
+  var g = j2g(jy,12,30); var back = g2j(g[0],g[1],g[2]);
+  return back[0]===jy && back[1]===12 && back[2]===30;
+}
+function daysInJalaliMonth(jy, jm){
+  if (jm <= 6) return 31;
+  if (jm <= 11) return 30;
+  return isLeapJalali(jy) ? 30 : 29;
+}
+function todayJalali(){
+  var d = new Date();
+  return g2j(d.getFullYear(), d.getMonth()+1, d.getDate());
+}
+function jToISO(jy,jm,jd){
+  var g = j2g(jy,jm,jd);
+  return g[0]+'-'+String(g[1]).padStart(2,'0')+'-'+String(g[2]).padStart(2,'0');
+}
+var JMONTHS = ['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+function faDigits(n){
+  var map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴','5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+  return String(n).replace(/[0-9]/g, function(d){return map[d];});
+}
+function jDateLabel(j){ return faDigits(j[2]) + ' ' + JMONTHS[j[1]-1] + ' ' + faDigits(j[0]); }
+
+/* ============ state ============ */
+var state = { vehicles: [], activeVehicleId: null, services: [], records: [], kmlog: [] };
+var STORAGE_PREFIX = 'car-service-booklet:';
+
+async function loadAll(){
+  try{
+    var v = localStorage.getItem(STORAGE_PREFIX+'vehicles'); state.vehicles = v ? JSON.parse(v) : [];
+  }catch(e){ state.vehicles = []; }
+  try{
+    var av = localStorage.getItem(STORAGE_PREFIX+'activeVehicleId'); state.activeVehicleId = av ? JSON.parse(av) : null;
+  }catch(e){ state.activeVehicleId = null; }
+  try{
+    var s = localStorage.getItem(STORAGE_PREFIX+'services'); state.services = s ? JSON.parse(s) : [];
+  }catch(e){ state.services = []; }
+  try{
+    var r = localStorage.getItem(STORAGE_PREFIX+'records'); state.records = r ? JSON.parse(r) : [];
+  }catch(e){ state.records = []; }
+  try{
+    var k = localStorage.getItem(STORAGE_PREFIX+'kmlog'); state.kmlog = k ? JSON.parse(k) : [];
+  }catch(e){ state.kmlog = []; }
+
+  await ensureVehicleIntegrity();
+}
+
+// Creates a default vehicle for first-run / pre-multi-vehicle data, and tags
+// any orphaned services/records/kmlog entries (no vehicleId) with it.
+async function ensureVehicleIntegrity(){
+  var changed = false;
+  if(state.vehicles.length === 0){
+    var def = { id: uid(), title: 'خودروی من', plate: '' };
+    state.vehicles.push(def);
+    state.services.forEach(function(x){ if(!x.vehicleId) x.vehicleId = def.id; });
+    state.records.forEach(function(x){ if(!x.vehicleId) x.vehicleId = def.id; });
+    state.kmlog.forEach(function(x){ if(!x.vehicleId) x.vehicleId = def.id; });
+    state.activeVehicleId = def.id;
+    changed = true;
+  }
+  if(!state.activeVehicleId || !state.vehicles.find(function(v){ return v.id === state.activeVehicleId; })){
+    state.activeVehicleId = state.vehicles[0].id;
+    changed = true;
+  }
+  if(changed){
+    await saveVehicles();
+    await saveActiveVehicle();
+    await saveServices();
+    await saveRecords();
+    await saveKmlog();
+  }
+}
+
+async function saveVehicles(){ try{ localStorage.setItem(STORAGE_PREFIX+'vehicles', JSON.stringify(state.vehicles)); }catch(e){ showToast('ذخیره‌سازی ناموفق بود'); } }
+async function saveActiveVehicle(){ try{ localStorage.setItem(STORAGE_PREFIX+'activeVehicleId', JSON.stringify(state.activeVehicleId)); }catch(e){ showToast('ذخیره‌سازی ناموفق بود'); } }
+async function saveServices(){ try{ localStorage.setItem(STORAGE_PREFIX+'services', JSON.stringify(state.services)); }catch(e){ showToast('ذخیره‌سازی ناموفق بود'); } }
+async function saveRecords(){ try{ localStorage.setItem(STORAGE_PREFIX+'records', JSON.stringify(state.records)); }catch(e){ showToast('ذخیره‌سازی ناموفق بود'); } }
+async function saveKmlog(){ try{ localStorage.setItem(STORAGE_PREFIX+'kmlog', JSON.stringify(state.kmlog)); }catch(e){ showToast('ذخیره‌سازی ناموفق بود'); } }
+
+/* ---- active-vehicle scoped accessors ---- */
+function activeVehicle(){ return state.vehicles.find(function(v){ return v.id === state.activeVehicleId; }); }
+function activeServices(){ return state.services.filter(function(s){ return s.vehicleId === state.activeVehicleId; }); }
+function activeRecords(){ return state.records.filter(function(r){ return r.vehicleId === state.activeVehicleId; }); }
+function activeKmlog(){ return state.kmlog.filter(function(k){ return k.vehicleId === state.activeVehicleId; }); }
+
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+/* ============ derived data ============ */
+function getCurrentKm(){
+  var max = 0;
+  activeKmlog().forEach(function(k){ if(k.km > max) max = k.km; });
+  activeRecords().forEach(function(r){ if(r.km > max) max = r.km; });
+  return max;
+}
+function getCurrentKmMeta(){
+  var cur = getCurrentKm();
+  var best = null;
+  activeKmlog().forEach(function(k){ if(k.km === cur) best = k; });
+  if(!best){ activeRecords().forEach(function(r){ if(r.km === cur) best = r; }); }
+  return best;
+}
+function lastRecordForService(serviceId){
+  var best = null;
+  activeRecords().filter(function(r){ return r.serviceId === serviceId; }).forEach(function(r){
+    if(!best || r.km > best.km) best = r;
+  });
+  return best;
+}
+function computeStatus(svc){
+  var last = lastRecordForService(svc.id);
+  var cur = getCurrentKm();
+  if(!last){
+    return { status:'none', remaining:null, due:null, last:null, pct:0 };
+  }
+  var due = last.km + svc.interval;
+  var remaining = due - cur;
+  var threshold = Math.min(500, Math.max(200, svc.interval * 0.15));
+  var status = remaining <= 0 ? 'overdue' : (remaining <= threshold ? 'soon' : 'ok');
+  var traveled = cur - last.km;
+  var pct = Math.max(0, Math.min(100, (traveled / svc.interval) * 100));
+  return { status:status, remaining:remaining, due:due, last:last, pct:pct };
+}
+function statusLabel(status, remaining){
+  if(status==='none') return 'بدون سابقهٔ ثبت';
+  if(status==='overdue') return 'گذشته از موعد';
+  if(status==='soon') return 'نزدیک به موعد';
+  return 'در وضعیت مناسب';
+}
+
+/* ============ odometer render ============ */
+function odoHTML(num, size){
+  var digits = faDigits(Math.round(num)).split('');
+  var latinDigits = String(Math.round(num)).split('');
+  var html = '<span class="odo '+size+'">';
+  latinDigits.forEach(function(d,i){
+    html += '<span class="odo-d">'+digits[i]+'</span>';
+  });
+  html += '</span>';
+  return html;
+}
+
+/* ============ toast ============ */
+var toastTimer;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+/* ============ rendering ============ */
+function renderHome(){
+  var cur = getCurrentKm();
+  document.getElementById('home-km-odo').innerHTML = odoHTML(cur,'lg') + '<span class="odo-unit">کیلومتر</span>';
+  var meta = getCurrentKmMeta();
+  document.getElementById('home-km-meta').textContent = meta ? ('آخرین ثبت: ' + jDateLabel(isoToJ(meta.dateISO))) : 'هنوز کیلومتری ثبت نشده';
+
+  var list = document.getElementById('alerts-list');
+  var svcs = activeServices();
+  if(svcs.length === 0){
+    list.innerHTML = '<div class="empty">هنوز خدمتی تعریف نکرده‌اید.<br>از تب «خدمات» شروع کنید.</div>';
+    return;
+  }
+  var items = svcs.map(function(svc){
+    return { svc:svc, s: computeStatus(svc) };
+  });
+  var order = { overdue:0, soon:1, ok:2, none:3 };
+  items.sort(function(a,b){
+    if(order[a.s.status] !== order[b.s.status]) return order[a.s.status]-order[b.s.status];
+    if(a.s.remaining==null) return 0;
+    return a.s.remaining - b.s.remaining;
+  });
+  list.innerHTML = items.map(function(it){
+    var svc = it.svc, s = it.s;
+    var sub;
+    if(s.status==='none'){
+      sub = 'بعد از اولین ثبت تعویض، وضعیت اینجا نمایش داده می‌شود';
+    } else if(s.remaining <= 0){
+      sub = faDigits(Math.abs(Math.round(s.remaining))) + ' کیلومتر از موعد گذشته';
+    } else {
+      sub = faDigits(Math.round(s.remaining)) + ' کیلومتر تا موعد بعدی';
+    }
+    return '<div class="alert-card">'+
+      '<div class="alert-top">'+
+        '<div>'+
+          '<div class="alert-title">'+svc.title+'</div>'+
+          '<div class="alert-sub">'+sub+'</div>'+
+        '</div>'+
+        '<span class="stamp '+s.status+'">'+statusLabel(s.status)+'</span>'+
+      '</div>'+
+      '<div class="bar-track"><div class="bar-fill '+s.status+'" style="width:'+s.pct+'%"></div></div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderServiceSelect(){
+  var sel = document.getElementById('rec-service');
+  var svcs = activeServices();
+  if(svcs.length===0){
+    sel.innerHTML = '<option value="">— ابتدا در تب «خدمات» یک خدمت اضافه کنید —</option>';
+    document.getElementById('rec-service-hint').textContent = '';
+    return;
+  }
+  sel.innerHTML = svcs.map(function(s){ return '<option value="'+s.id+'">'+s.title+'</option>'; }).join('');
+  updateRecHint();
+}
+function updateRecHint(){
+  var id = document.getElementById('rec-service').value;
+  var svc = activeServices().find(function(s){ return s.id===id; });
+  var hint = document.getElementById('rec-service-hint');
+  if(!svc){ hint.textContent=''; return; }
+  hint.textContent = 'حد مجاز مصرف این قطعه: هر ' + faDigits(svc.interval) + ' کیلومتر';
+}
+
+function renderServices(){
+  var list = document.getElementById('services-list');
+  var svcs = activeServices();
+  if(svcs.length===0){
+    list.innerHTML = '<div class="empty">هنوز خدمتی اضافه نشده است</div>';
+    return;
+  }
+  list.innerHTML = svcs.map(function(s){
+    return '<div class="svc-row">'+
+      '<div>'+
+        '<div class="svc-name">'+s.title+'</div>'+
+        '<div class="svc-interval">هر '+faDigits(s.interval)+' کیلومتر</div>'+
+      '</div>'+
+      '<div class="row-actions">'+
+        '<button class="icon-btn" data-edit-svc="'+s.id+'">'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'+
+        '</button>'+
+        '<button class="icon-btn danger" data-del-svc="'+s.id+'">'+
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>'+
+        '</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function isoToJ(iso){
+  var parts = iso.split('-').map(Number);
+  return g2j(parts[0], parts[1], parts[2]);
+}
+
+function renderHistory(){
+  var events = [];
+  activeRecords().forEach(function(r){
+    var svc = state.services.find(function(s){ return s.id===r.serviceId; });
+    events.push({ type:'svc', dateISO:r.dateISO, km:r.km, title: svc ? svc.title : 'خدمت حذف‌شده', note:r.note, id:r.id });
+  });
+  activeKmlog().forEach(function(k){
+    events.push({ type:'km', dateISO:k.dateISO, km:k.km, id:k.id });
+  });
+  events.sort(function(a,b){ return b.dateISO.localeCompare(a.dateISO) || (b.km - a.km); });
+
+  var list = document.getElementById('history-list');
+  if(events.length===0){
+    list.innerHTML = '<div class="empty">هنوز رویدادی ثبت نشده است</div>';
+    return;
+  }
+  list.innerHTML = events.map(function(e){
+    var j = isoToJ(e.dateISO);
+    if(e.type==='svc'){
+      return '<div class="hist-item">'+
+        '<span class="hist-dot svc"></span>'+
+        '<div style="flex:1; min-width:0;">'+
+          '<div class="hist-title">'+e.title+'</div>'+
+          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigits(e.km)+' کیلومتر'+(e.note?' · '+e.note:'')+'</div>'+
+        '</div>'+
+        '<div class="hist-actions">'+
+          '<button class="icon-btn" data-edit-rec="'+e.id+'">'+
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'+
+          '</button>'+
+          '<button class="icon-btn danger" data-del-rec="'+e.id+'">×</button>'+
+        '</div>'+
+      '</div>';
+    } else {
+      return '<div class="hist-item">'+
+        '<span class="hist-dot km"></span>'+
+        '<div style="flex:1; min-width:0;">'+
+          '<div class="hist-title">به‌روزرسانی کیلومتر</div>'+
+          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigits(e.km)+' کیلومتر</div>'+
+        '</div>'+
+        '<div class="hist-actions">'+
+          '<button class="icon-btn" data-edit-km="'+e.id+'">'+
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'+
+          '</button>'+
+          '<button class="icon-btn danger" data-del-km="'+e.id+'">×</button>'+
+        '</div>'+
+      '</div>';
+    }
+  }).join('');
+}
+
+function renderVehicleBar(){
+  var v = activeVehicle();
+  document.getElementById('active-vehicle-name').textContent = v ? v.title : 'انتخاب خودرو';
+}
+
+function renderVehicles(){
+  var list = document.getElementById('vehicles-list');
+  if(state.vehicles.length===0){
+    list.innerHTML = '<div class="empty">هنوز خودرویی اضافه نشده است</div>';
+    return;
+  }
+  list.innerHTML = state.vehicles.map(function(v){
+    var isActive = v.id === state.activeVehicleId;
+    return '<div class="veh-row'+(isActive?' is-active':'')+'" data-select-vehicle="'+v.id+'">'+
+      '<div>'+
+        '<div class="veh-name-row"><span class="veh-name">'+v.title+'</span>'+(isActive?'<span class="active-tag">فعال</span>':'')+'</div>'+
+        (v.plate ? '<div class="veh-plate">'+v.plate+'</div>' : '')+
+      '</div>'+
+      '<div class="row-actions">'+
+        '<button class="icon-btn" data-edit-veh="'+v.id+'">'+
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>'+
+        '</button>'+
+        (state.vehicles.length > 1 ? '<button class="icon-btn danger" data-del-veh="'+v.id+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button>' : '')+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function renderAll(){
+  renderVehicleBar();
+  renderVehicles();
+  renderHome();
+  renderServiceSelect();
+  renderServices();
+  renderHistory();
+}
+
+/* ============ date select population ============ */
+function fillYearSelect(sel, centerYear, extraYear){
+  var years = new Set();
+  for(var y = centerYear+1; y >= centerYear-6; y--){ years.add(y); }
+  if(extraYear) years.add(extraYear);
+  var arr = Array.from(years).sort(function(a,b){ return b-a; });
+  sel.innerHTML = arr.map(function(y){ return '<option value="'+y+'">'+faDigits(y)+'</option>'; }).join('');
+}
+function setTrioDate(dayId, monthId, yearId, iso){
+  var day = document.getElementById(dayId), month = document.getElementById(monthId), year = document.getElementById(yearId);
+  var j = isoToJ(iso);
+  fillYearSelect(year, todayJalali()[0], j[0]);
+  year.value = j[0];
+  month.value = j[1];
+  fillDaySelect(day, j[0], j[1]);
+  day.value = j[2];
+}
+function fillMonthSelect(sel){
+  sel.innerHTML = JMONTHS.map(function(m,i){ return '<option value="'+(i+1)+'">'+m+'</option>'; }).join('');
+}
+function fillDaySelect(sel, jy, jm){
+  var n = daysInJalaliMonth(jy, jm);
+  var opts = '';
+  for(var d=1; d<=n; d++){ opts += '<option value="'+d+'">'+faDigits(d)+'</option>'; }
+  sel.innerHTML = opts;
+}
+function setupDateTrio(dayId, monthId, yearId){
+  var day = document.getElementById(dayId), month = document.getElementById(monthId), year = document.getElementById(yearId);
+  var t = todayJalali();
+  fillMonthSelect(month);
+  fillYearSelect(year, t[0]);
+  year.value = t[0]; month.value = t[1];
+  fillDaySelect(day, t[0], t[1]);
+  day.value = t[2];
+  function refreshDays(){
+    var jy = parseInt(year.value), jm = parseInt(month.value);
+    var prevDay = parseInt(day.value) || 1;
+    fillDaySelect(day, jy, jm);
+    day.value = Math.min(prevDay, daysInJalaliMonth(jy,jm));
+  }
+  month.addEventListener('change', refreshDays);
+  year.addEventListener('change', refreshDays);
+  return {
+    getISO: function(){ return jToISO(parseInt(year.value), parseInt(month.value), parseInt(day.value)); }
+  };
+}
+
+/* ============ nav ============ */
+function showView(name){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('nav.bottom button').forEach(function(b){
+    b.classList.toggle('active', b.dataset.view === name);
+  });
+  if(name==='home') renderHome();
+  if(name==='add'){ renderServiceSelect(); }
+  if(name==='services') renderServices();
+  if(name==='history') renderHistory();
+}
+document.querySelectorAll('nav.bottom button').forEach(function(b){
+  b.addEventListener('click', function(){ showView(b.dataset.view); });
+});
+
+/* ============ init ============ */
+var recDate, kmDate;
+
+async function init(){
+  await loadAll();
+  recDate = setupDateTrio('rec-day','rec-month','rec-year');
+  kmDate = setupDateTrio('km-day','km-month','km-year');
+  document.getElementById('rec-km').value = getCurrentKm() || '';
+  renderAll();
+}
+init();
+
+/* ============ events: add record ============ */
+document.getElementById('rec-service').addEventListener('change', updateRecHint);
+
+var editingRecordId = null;
+
+function resetRecordForm(){
+  editingRecordId = null;
+  document.getElementById('rec-form-label').textContent = 'ثبت تعویض جدید';
+  document.getElementById('btn-save-record').textContent = 'ثبت تعویض';
+  document.getElementById('btn-cancel-edit-record').style.display = 'none';
+  document.getElementById('rec-note').value = '';
+  document.getElementById('rec-km').value = getCurrentKm() || '';
+  var t = todayJalali();
+  document.getElementById('rec-year').value = t[0];
+  document.getElementById('rec-month').value = t[1];
+  fillDaySelect(document.getElementById('rec-day'), t[0], t[1]);
+  document.getElementById('rec-day').value = t[2];
+}
+
+document.getElementById('btn-save-record').addEventListener('click', async function(){
+  var serviceId = document.getElementById('rec-service').value;
+  var kmVal = parseInt(document.getElementById('rec-km').value);
+  if(!serviceId){ showToast('یک خدمت انتخاب کنید'); return; }
+  if(!kmVal || kmVal < 0){ showToast('کیلومتر معتبر وارد کنید'); return; }
+  var note = document.getElementById('rec-note').value.trim();
+  if(editingRecordId){
+    var rec = state.records.find(function(r){ return r.id === editingRecordId; });
+    if(rec){
+      rec.serviceId = serviceId;
+      rec.dateISO = recDate.getISO();
+      rec.km = kmVal;
+      rec.note = note;
+    }
+    await saveRecords();
+    showToast('تعویض به‌روزرسانی شد');
+  } else {
+    state.records.push({
+      id: uid(),
+      vehicleId: state.activeVehicleId,
+      serviceId: serviceId,
+      dateISO: recDate.getISO(),
+      km: kmVal,
+      note: note
+    });
+    await saveRecords();
+    showToast('تعویض ثبت شد');
+  }
+  resetRecordForm();
+  showView('home');
+});
+
+document.getElementById('btn-cancel-edit-record').addEventListener('click', function(){
+  resetRecordForm();
+  showView('history');
+});
+
+/* ============ events: services ============ */
+var editingServiceId = null;
+
+function resetServiceForm(){
+  editingServiceId = null;
+  document.getElementById('svc-title').value = '';
+  document.getElementById('svc-interval').value = '';
+  document.getElementById('svc-form-label').textContent = 'افزودن خدمت جدید';
+  document.getElementById('btn-save-service').textContent = 'افزودن خدمت';
+  document.getElementById('btn-cancel-edit-service').style.display = 'none';
+}
+
+document.getElementById('btn-save-service').addEventListener('click', async function(){
+  var title = document.getElementById('svc-title').value.trim();
+  var interval = parseInt(document.getElementById('svc-interval').value);
+  if(!title){ showToast('عنوان خدمت را وارد کنید'); return; }
+  if(!interval || interval <= 0){ showToast('حد مجاز کیلومتر را وارد کنید'); return; }
+  if(editingServiceId){
+    var svc = state.services.find(function(s){ return s.id === editingServiceId; });
+    if(svc){ svc.title = title; svc.interval = interval; }
+    await saveServices();
+    showToast('خدمت به‌روزرسانی شد');
+  } else {
+    state.services.push({ id: uid(), vehicleId: state.activeVehicleId, title: title, interval: interval });
+    await saveServices();
+    showToast('خدمت اضافه شد');
+  }
+  resetServiceForm();
+  renderServices();
+  renderServiceSelect();
+});
+
+document.getElementById('btn-cancel-edit-service').addEventListener('click', resetServiceForm);
+
+document.getElementById('services-list').addEventListener('click', async function(e){
+  var editBtn = e.target.closest('[data-edit-svc]');
+  var delBtn = e.target.closest('[data-del-svc]');
+  if(editBtn){
+    var svc = state.services.find(function(s){ return s.id === editBtn.dataset.editSvc; });
+    if(!svc) return;
+    editingServiceId = svc.id;
+    document.getElementById('svc-title').value = svc.title;
+    document.getElementById('svc-interval').value = svc.interval;
+    document.getElementById('svc-form-label').textContent = 'ویرایش خدمت';
+    document.getElementById('btn-save-service').textContent = 'ذخیره تغییرات';
+    document.getElementById('btn-cancel-edit-service').style.display = '';
+    document.getElementById('svc-title').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  if(delBtn){
+    var id = delBtn.dataset.delSvc;
+    state.services = state.services.filter(function(s){ return s.id !== id; });
+    await saveServices();
+    if(editingServiceId === id) resetServiceForm();
+    renderServices();
+    renderServiceSelect();
+    showToast('خدمت حذف شد');
+  }
+});
+
+/* ============ events: history edit / delete ============ */
+document.getElementById('history-list').addEventListener('click', async function(e){
+  var delRec = e.target.closest('[data-del-rec]');
+  var delKm = e.target.closest('[data-del-km]');
+  var editRec = e.target.closest('[data-edit-rec]');
+  var editKm = e.target.closest('[data-edit-km]');
+
+  if(editRec){
+    var rec = state.records.find(function(r){ return r.id === editRec.dataset.editRec; });
+    if(!rec) return;
+    editingRecordId = rec.id;
+    renderServiceSelect();
+    document.getElementById('rec-service').value = rec.serviceId;
+    updateRecHint();
+    setTrioDate('rec-day','rec-month','rec-year', rec.dateISO);
+    document.getElementById('rec-km').value = rec.km;
+    document.getElementById('rec-note').value = rec.note || '';
+    document.getElementById('rec-form-label').textContent = 'ویرایش تعویض';
+    document.getElementById('btn-save-record').textContent = 'ذخیره تغییرات';
+    document.getElementById('btn-cancel-edit-record').style.display = '';
+    showView('add');
+    return;
+  }
+  if(editKm){
+    var k = state.kmlog.find(function(x){ return x.id === editKm.dataset.editKm; });
+    if(!k) return;
+    editingKmId = k.id;
+    document.getElementById('km-value').value = k.km;
+    setTrioDate('km-day','km-month','km-year', k.dateISO);
+    document.getElementById('km-sheet-title').textContent = 'ویرایش کیلومتر';
+    document.getElementById('btn-confirm-km').textContent = 'ذخیره تغییرات';
+    document.getElementById('km-overlay').classList.add('show');
+    return;
+  }
+  if(delRec){
+    state.records = state.records.filter(function(r){ return r.id !== delRec.dataset.delRec; });
+    await saveRecords();
+    if(editingRecordId === delRec.dataset.delRec) resetRecordForm();
+    renderAll();
+    showToast('رکورد حذف شد');
+  } else if(delKm){
+    state.kmlog = state.kmlog.filter(function(k){ return k.id !== delKm.dataset.delKm; });
+    await saveKmlog();
+    renderAll();
+    showToast('رکورد حذف شد');
+  }
+});
+
+/* ============ events: km update modal ============ */
+var editingKmId = null;
+
+function closeKmOverlay(){
+  document.getElementById('km-overlay').classList.remove('show');
+  editingKmId = null;
+  document.getElementById('km-sheet-title').textContent = 'به‌روزرسانی کیلومتر فعلی';
+  document.getElementById('btn-confirm-km').textContent = 'ثبت';
+}
+
+document.getElementById('btn-open-km').addEventListener('click', function(){
+  editingKmId = null;
+  document.getElementById('km-sheet-title').textContent = 'به‌روزرسانی کیلومتر فعلی';
+  document.getElementById('btn-confirm-km').textContent = 'ثبت';
+  document.getElementById('km-value').value = getCurrentKm() || '';
+  var t = todayJalali();
+  document.getElementById('km-year').value = t[0];
+  document.getElementById('km-month').value = t[1];
+  fillDaySelect(document.getElementById('km-day'), t[0], t[1]);
+  document.getElementById('km-day').value = t[2];
+  document.getElementById('km-overlay').classList.add('show');
+});
+document.getElementById('btn-cancel-km').addEventListener('click', closeKmOverlay);
+document.getElementById('km-overlay').addEventListener('click', function(e){
+  if(e.target.id === 'km-overlay') closeKmOverlay();
+});
+document.getElementById('btn-confirm-km').addEventListener('click', async function(){
+  var val = parseInt(document.getElementById('km-value').value);
+  if(!val || val < 0){ showToast('کیلومتر معتبر وارد کنید'); return; }
+  if(editingKmId){
+    var entry = state.kmlog.find(function(k){ return k.id === editingKmId; });
+    if(entry){ entry.km = val; entry.dateISO = kmDate.getISO(); }
+    await saveKmlog();
+    showToast('کیلومتر به‌روزرسانی شد');
+  } else {
+    var cur = getCurrentKm();
+    if(val < cur){ showToast('کیلومتر نمی‌تواند کمتر از مقدار فعلی باشد'); return; }
+    state.kmlog.push({ id: uid(), vehicleId: state.activeVehicleId, dateISO: kmDate.getISO(), km: val });
+    await saveKmlog();
+    showToast('کیلومتر به‌روزرسانی شد');
+  }
+  closeKmOverlay();
+  renderAll();
+});
+
+/* ============ settings: backup & restore ============ */
+document.getElementById('btn-open-settings').addEventListener('click', function(){
+  document.getElementById('settings-overlay').classList.add('show');
+});
+document.getElementById('btn-close-settings').addEventListener('click', function(){
+  document.getElementById('settings-overlay').classList.remove('show');
+});
+document.getElementById('settings-overlay').addEventListener('click', function(e){
+  if(e.target.id === 'settings-overlay') document.getElementById('settings-overlay').classList.remove('show');
+});
+
+document.getElementById('btn-export-backup').addEventListener('click', function(){
+  var backup = {
+    app: 'car-service-booklet',
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    vehicles: state.vehicles,
+    activeVehicleId: state.activeVehicleId,
+    services: state.services,
+    records: state.records,
+    kmlog: state.kmlog
+  };
+  var blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var t = todayJalali();
+  a.href = url;
+  a.download = 'car-service-backup-' + t[0] + '-' + String(t[1]).padStart(2,'0') + '-' + String(t[2]).padStart(2,'0') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('فایل پشتیبان دانلود شد');
+});
+
+document.getElementById('btn-restore-backup').addEventListener('click', function(){
+  document.getElementById('input-restore-backup').click();
+});
+
+document.getElementById('input-restore-backup').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = async function(ev){
+    try{
+      var data = JSON.parse(ev.target.result);
+      if(!data || !Array.isArray(data.services) || !Array.isArray(data.records) || !Array.isArray(data.kmlog)){
+        showToast('فایل پشتیبان معتبر نیست');
+        return;
+      }
+      var ok = confirm('اطلاعات فعلی برنامه با محتوای این فایل جایگزین می‌شود. ادامه می‌دهید؟');
+      if(!ok) return;
+      state.services = data.services;
+      state.records = data.records;
+      state.kmlog = data.kmlog;
+      state.vehicles = Array.isArray(data.vehicles) ? data.vehicles : [];
+      state.activeVehicleId = data.activeVehicleId || null;
+      await ensureVehicleIntegrity();
+      await saveServices();
+      await saveRecords();
+      await saveKmlog();
+      resetServiceForm();
+      resetRecordForm();
+      resetVehicleForm();
+      closeKmOverlay();
+      document.getElementById('settings-overlay').classList.remove('show');
+      renderAll();
+      showToast('بازیابی با موفقیت انجام شد');
+    }catch(err){
+      showToast('خواندن فایل پشتیبان ناموفق بود');
+    } finally {
+      e.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* ============ vehicles: switch / add / edit / delete ============ */
+var editingVehicleId = null;
+
+function resetVehicleForm(){
+  editingVehicleId = null;
+  document.getElementById('veh-title').value = '';
+  document.getElementById('veh-plate').value = '';
+  document.getElementById('veh-form-label').textContent = 'افزودن خودروی جدید';
+  document.getElementById('btn-save-vehicle').textContent = 'افزودن خودرو';
+  document.getElementById('btn-cancel-edit-vehicle').style.display = 'none';
+}
+
+document.getElementById('btn-open-vehicles').addEventListener('click', function(){
+  renderVehicles();
+  document.getElementById('vehicles-overlay').classList.add('show');
+});
+document.getElementById('btn-close-vehicles').addEventListener('click', function(){
+  document.getElementById('vehicles-overlay').classList.remove('show');
+  resetVehicleForm();
+});
+document.getElementById('vehicles-overlay').addEventListener('click', function(e){
+  if(e.target.id === 'vehicles-overlay'){
+    document.getElementById('vehicles-overlay').classList.remove('show');
+    resetVehicleForm();
+  }
+});
+
+document.getElementById('btn-save-vehicle').addEventListener('click', async function(){
+  var title = document.getElementById('veh-title').value.trim();
+  var plate = document.getElementById('veh-plate').value.trim();
+  if(!title){ showToast('نام خودرو را وارد کنید'); return; }
+  if(editingVehicleId){
+    var v = state.vehicles.find(function(x){ return x.id === editingVehicleId; });
+    if(v){ v.title = title; v.plate = plate; }
+    await saveVehicles();
+    showToast('خودرو به‌روزرسانی شد');
+  } else {
+    var nv = { id: uid(), title: title, plate: plate };
+    state.vehicles.push(nv);
+    state.activeVehicleId = nv.id;
+    await saveVehicles();
+    await saveActiveVehicle();
+    showToast('خودرو اضافه شد');
+  }
+  resetVehicleForm();
+  renderAll();
+});
+
+document.getElementById('btn-cancel-edit-vehicle').addEventListener('click', resetVehicleForm);
+
+document.getElementById('vehicles-list').addEventListener('click', async function(e){
+  var editBtn = e.target.closest('[data-edit-veh]');
+  var delBtn = e.target.closest('[data-del-veh]');
+  var selectRow = e.target.closest('[data-select-vehicle]');
+
+  if(editBtn){
+    var v = state.vehicles.find(function(x){ return x.id === editBtn.dataset.editVeh; });
+    if(!v) return;
+    editingVehicleId = v.id;
+    document.getElementById('veh-title').value = v.title;
+    document.getElementById('veh-plate').value = v.plate || '';
+    document.getElementById('veh-form-label').textContent = 'ویرایش خودرو';
+    document.getElementById('btn-save-vehicle').textContent = 'ذخیره تغییرات';
+    document.getElementById('btn-cancel-edit-vehicle').style.display = '';
+    document.getElementById('veh-title').scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
+  if(delBtn){
+    if(state.vehicles.length <= 1){ showToast('باید حداقل یک خودرو باقی بماند'); return; }
+    var id = delBtn.dataset.delVeh;
+    var v2 = state.vehicles.find(function(x){ return x.id === id; });
+    var ok = confirm('خودرو «'+(v2?v2.title:'')+'» و تمام خدمات، تعویض‌ها و سوابق کیلومتر آن حذف می‌شود. ادامه می‌دهید؟');
+    if(!ok) return;
+    state.vehicles = state.vehicles.filter(function(x){ return x.id !== id; });
+    state.services = state.services.filter(function(x){ return x.vehicleId !== id; });
+    state.records = state.records.filter(function(x){ return x.vehicleId !== id; });
+    state.kmlog = state.kmlog.filter(function(x){ return x.vehicleId !== id; });
+    if(state.activeVehicleId === id){ state.activeVehicleId = state.vehicles[0].id; }
+    await saveVehicles();
+    await saveActiveVehicle();
+    await saveServices();
+    await saveRecords();
+    await saveKmlog();
+    if(editingVehicleId === id) resetVehicleForm();
+    showToast('خودرو حذف شد');
+    renderAll();
+    return;
+  }
+  if(selectRow){
+    var newId = selectRow.dataset.selectVehicle;
+    if(newId !== state.activeVehicleId){
+      state.activeVehicleId = newId;
+      await saveActiveVehicle();
+      resetRecordForm();
+      resetServiceForm();
+      closeKmOverlay();
+      document.getElementById('vehicles-overlay').classList.remove('show');
+      resetVehicleForm();
+      renderAll();
+      showToast('خودرو فعال تغییر کرد');
+    } else {
+      document.getElementById('vehicles-overlay').classList.remove('show');
+    }
+  }
+});
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('sw.js').catch(function(){ /* offline support unavailable */ });
+    });
+  }
+</script>
+</body>
+</html>
