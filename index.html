@@ -60,7 +60,7 @@
   }
   /* ---------- header ---------- */
   header.top{
-    padding:22px 20px 16px;
+    padding:calc(22px + env(safe-area-inset-top, 0px)) 20px 16px;
     background:var(--surface);
     border-bottom:1px dashed var(--line-strong);
     position:relative;
@@ -72,11 +72,14 @@
   .brand-row{display:flex; align-items:center; gap:10px;}
   .brand-mark{
     width:38px;height:38px;border-radius:9px;
-    background:var(--ink); color:var(--brass-bg);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Space Mono',monospace; font-weight:700; font-size:15px;
+    background:var(--ink);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
     flex-shrink:0;
   }
+  .brand-mark svg{ color:var(--brass-bg); }
+  .brand-mark .mini-digits{ display:flex; gap:2px; }
+  .brand-mark .mini-digits span{ width:6px; height:7px; border-radius:1.5px; background:var(--brass-bg); }
+  .brand-mark .mini-digits span:nth-child(2){ background:var(--brass); }
   h1.brand-title{font-size:19px; font-weight:800; margin:0; letter-spacing:-.2px;}
   .brand-sub{font-size:12px; color:var(--ink-soft); margin-top:1px;}
 
@@ -128,10 +131,15 @@
   .odo-d{
     font-family:'Space Mono', ui-monospace, Menlo, Consolas, monospace;
     font-weight:700; font-variant-numeric:tabular-nums;
-    background:var(--ink); color:var(--brass-bg);
+    background:linear-gradient(180deg,#2c332a 0%, var(--ink) 65%);
+    color:var(--brass-bg);
     border-radius:3px; padding:3px 1px; text-align:center;
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.07);
+    border:1px solid rgba(185,134,46,.28);
   }
-  .odo.lg .odo-d{ min-width:22px; font-size:26px; padding:6px 2px;}
+  .odo-sep{ display:inline-flex; align-items:flex-end; justify-content:center; width:5px; padding-bottom:3px;}
+  .odo-sep::after{ content:""; width:3px; height:3px; border-radius:50%; background:var(--brass); opacity:.7; display:block; }
+  .odo.lg .odo-d{ min-width:22px; font-size:26px; padding:6px 2px; box-shadow: inset 0 -3px 5px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);}
   .odo.md .odo-d{ min-width:15px; font-size:16px; padding:3px 2px;}
   .odo.sm .odo-d{ min-width:11px; font-size:12px; padding:2px 1px; border-radius:2px;}
   .odo-unit{font-size:12px; color:var(--ink-soft); margin-inline-start:6px; align-self:center;}
@@ -196,6 +204,18 @@
     width:100%; border:1px solid var(--line-strong); background:var(--surface-2);
     border-radius:10px; padding:10px 12px; font-family:inherit; font-size:14px; color:var(--ink);
   }
+  .field input.num-input{ direction:ltr; text-align:right; font-family:'Space Mono', ui-monospace, Menlo, Consolas, monospace; letter-spacing:.3px; }
+  .onboarding-card{
+    text-align:center; padding:32px 20px; border:1px dashed var(--line-strong); border-radius:16px;
+    background:var(--surface);
+  }
+  .onboarding-icon{
+    width:52px;height:52px;border-radius:14px; background:var(--brass-bg); color:var(--brass-deep);
+    display:flex; align-items:center; justify-content:center; margin:0 auto 14px;
+  }
+  .onboarding-title{font-weight:800; font-size:15px; margin-bottom:6px;}
+  .onboarding-text{font-size:12.5px; color:var(--ink-soft); line-height:1.9; margin-bottom:16px;}
+  .photo-status{font-size:11.5px; color:var(--ink-soft); margin-top:8px; line-height:1.7;}
   .field textarea{resize:vertical; min-height:60px;}
   .date-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;}
   .card-form{
@@ -277,7 +297,10 @@
   <header class="top">
     <div class="brand-row" style="justify-content:space-between;">
       <div style="display:flex; align-items:center; gap:10px;">
-        <div class="brand-mark">۱۲۳</div>
+        <div class="brand-mark">
+          <svg width="18" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-2l2-5a2 2 0 0 1 2-1h6a2 2 0 0 1 2 1l2 5v2a2 2 0 0 1-2 2M5 17a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2M17 17a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2"/></svg>
+          <div class="mini-digits"><span></span><span></span><span></span></div>
+        </div>
         <div>
           <h1 class="brand-title">دفترچه سرویس خودرو</h1>
           <div class="brand-sub">تعویض روغن، فیلتر، تسمه و سایر سرویس‌ها را زیر نظر داشته باشید</div>
@@ -338,7 +361,7 @@
 
         <div class="field">
           <label>کیلومتر در زمان تعویض</label>
-          <input type="number" id="rec-km" placeholder="مثلاً ۴۵۰۰۰" inputmode="numeric">
+          <input type="text" id="rec-km" class="num-input" placeholder="مثلاً 45,000" inputmode="numeric">
         </div>
 
         <div class="field">
@@ -366,7 +389,7 @@
         </div>
         <div class="field">
           <label>حد مجاز مصرف قطعه (کیلومتر)</label>
-          <input type="number" id="svc-interval" placeholder="مثلاً ۵۰۰۰" inputmode="numeric">
+          <input type="text" id="svc-interval" class="num-input" placeholder="مثلاً 5,000" inputmode="numeric">
         </div>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-ghost btn-block" id="btn-cancel-edit-service" style="display:none;">انصراف</button>
@@ -418,7 +441,14 @@
       </div>
       <div class="field">
         <label>کیلومتر</label>
-        <input type="number" id="km-value" inputmode="numeric" placeholder="مثلاً ۴۶۲۰۰">
+        <input type="text" id="km-value" class="num-input" inputmode="numeric" placeholder="مثلاً 46,200">
+      </div>
+      <div class="field">
+        <input type="file" id="km-photo-input" accept="image/*" capture="environment" style="display:none;">
+        <button class="btn btn-ghost btn-block" type="button" id="btn-km-photo">
+          📷 گرفتن عکس از کیلومترشمار
+        </button>
+        <div class="photo-status" id="km-photo-status" style="display:none;"></div>
       </div>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-ghost btn-block" id="btn-cancel-km">انصراف</button>
@@ -530,6 +560,52 @@ function faDigits(n){
 }
 function jDateLabel(j){ return faDigits(j[2]) + ' ' + JMONTHS[j[1]-1] + ' ' + faDigits(j[0]); }
 
+/* ============ numeric input helpers ============ */
+// Accepts digits typed via Persian, Arabic-Indic, or Latin keyboards and
+// returns a clean Latin-digit-only string (fixes iPhone Persian-keyboard
+// numbers not registering, since parseInt() can't read ۰-۹ / ٠-٩ directly).
+function toEnglishDigits(str){
+  if(!str) return '';
+  var fa = '۰۱۲۳۴۵۶۷۸۹', ar = '٠١٢٣٤٥٦٧٨٩', out = '';
+  for(var i=0;i<str.length;i++){
+    var ch = str[i];
+    var fi = fa.indexOf(ch), ai = ar.indexOf(ch);
+    if(fi>-1) out += fi;
+    else if(ai>-1) out += ai;
+    else if(ch>='0' && ch<='9') out += ch;
+  }
+  return out;
+}
+function groupDigits(digitStr){
+  if(!digitStr) return '';
+  return digitStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+// Persian-digit display string with ٬ thousand separators, e.g. for "5000" -> "۵٬۰۰۰"
+function faDigitsGrouped(n){
+  var neg = n < 0;
+  var s = Math.round(Math.abs(n)).toString();
+  var grouped = s.replace(/\B(?=(\d{3})+(?!\d))/g, '٬');
+  return (neg?'-':'') + faDigits(grouped);
+}
+function getFieldNumber(id){
+  var raw = toEnglishDigits(document.getElementById(id).value);
+  return raw ? parseInt(raw, 10) : NaN;
+}
+function setGroupedValue(id, num){
+  document.getElementById(id).value = (num || num === 0) ? groupDigits(String(Math.round(num))) : '';
+}
+// Live-formats a text input as the user types: normalizes any digit script
+// to Latin and inserts 3-digit comma grouping.
+function attachThousandsFormatter(id){
+  var el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('input', function(){
+    var digits = toEnglishDigits(el.value).slice(0, 9);
+    el.value = groupDigits(digits);
+  });
+}
+['rec-km','svc-interval','km-value'].forEach(attachThousandsFormatter);
+
 /* ============ state ============ */
 var state = { vehicles: [], activeVehicleId: null, services: [], records: [], kmlog: [] };
 var STORAGE_PREFIX = 'car-service-booklet:';
@@ -639,11 +715,15 @@ function statusLabel(status, remaining){
 
 /* ============ odometer render ============ */
 function odoHTML(num, size){
-  var digits = faDigits(Math.round(num)).split('');
   var latinDigits = String(Math.round(num)).split('');
+  var n = latinDigits.length;
   var html = '<span class="odo '+size+'">';
   latinDigits.forEach(function(d,i){
-    html += '<span class="odo-d">'+digits[i]+'</span>';
+    html += '<span class="odo-d">'+d+'</span>';
+    var fromRight = n - i - 1;
+    if(fromRight > 0 && fromRight % 3 === 0){
+      html += '<span class="odo-sep"></span>';
+    }
   });
   html += '</span>';
   return html;
@@ -669,7 +749,14 @@ function renderHome(){
   var list = document.getElementById('alerts-list');
   var svcs = activeServices();
   if(svcs.length === 0){
-    list.innerHTML = '<div class="empty">هنوز خدمتی تعریف نکرده‌اید.<br>از تب «خدمات» شروع کنید.</div>';
+    list.innerHTML = '<div class="onboarding-card">'+
+      '<div class="onboarding-icon">'+
+        '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17v3h3l5.3-5.3a4 4 0 0 1 5.4-5.4l-3 3-2-2z"/><path d="M18 6l1.5-1.5M19.5 4.5l1 1M19.5 4.5l-1-1"/></svg>'+
+      '</div>'+
+      '<div class="onboarding-title">بیایید شروع کنیم</div>'+
+      '<div class="onboarding-text">اول یک خدمت مثل «تعویض روغن موتور» را با حد مجاز کیلومترش تعریف کنید تا از اینجا هشدار نزدیک شدن به موعدش را ببینید.</div>'+
+      '<button class="btn btn-brass" onclick="showView(\'services\'); setTimeout(function(){ var el=document.getElementById(\'svc-title\'); if(el) el.focus(); }, 300);">افزودن اولین خدمت</button>'+
+    '</div>';
     return;
   }
   var items = svcs.map(function(svc){
@@ -687,9 +774,9 @@ function renderHome(){
     if(s.status==='none'){
       sub = 'بعد از اولین ثبت تعویض، وضعیت اینجا نمایش داده می‌شود';
     } else if(s.remaining <= 0){
-      sub = faDigits(Math.abs(Math.round(s.remaining))) + ' کیلومتر از موعد گذشته';
+      sub = faDigitsGrouped(Math.abs(Math.round(s.remaining))) + ' کیلومتر از موعد گذشته';
     } else {
-      sub = faDigits(Math.round(s.remaining)) + ' کیلومتر تا موعد بعدی';
+      sub = faDigitsGrouped(Math.round(s.remaining)) + ' کیلومتر تا موعد بعدی';
     }
     return '<div class="alert-card">'+
       '<div class="alert-top">'+
@@ -720,7 +807,7 @@ function updateRecHint(){
   var svc = activeServices().find(function(s){ return s.id===id; });
   var hint = document.getElementById('rec-service-hint');
   if(!svc){ hint.textContent=''; return; }
-  hint.textContent = 'حد مجاز مصرف این قطعه: هر ' + faDigits(svc.interval) + ' کیلومتر';
+  hint.textContent = 'حد مجاز مصرف این قطعه: هر ' + faDigitsGrouped(svc.interval) + ' کیلومتر';
 }
 
 function renderServices(){
@@ -734,7 +821,7 @@ function renderServices(){
     return '<div class="svc-row">'+
       '<div>'+
         '<div class="svc-name">'+s.title+'</div>'+
-        '<div class="svc-interval">هر '+faDigits(s.interval)+' کیلومتر</div>'+
+        '<div class="svc-interval">هر '+faDigitsGrouped(s.interval)+' کیلومتر</div>'+
       '</div>'+
       '<div class="row-actions">'+
         '<button class="icon-btn" data-edit-svc="'+s.id+'">'+
@@ -776,7 +863,7 @@ function renderHistory(){
         '<span class="hist-dot svc"></span>'+
         '<div style="flex:1; min-width:0;">'+
           '<div class="hist-title">'+e.title+'</div>'+
-          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigits(e.km)+' کیلومتر'+(e.note?' · '+e.note:'')+'</div>'+
+          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigitsGrouped(e.km)+' کیلومتر'+(e.note?' · '+e.note:'')+'</div>'+
         '</div>'+
         '<div class="hist-actions">'+
           '<button class="icon-btn" data-edit-rec="'+e.id+'">'+
@@ -790,7 +877,7 @@ function renderHistory(){
         '<span class="hist-dot km"></span>'+
         '<div style="flex:1; min-width:0;">'+
           '<div class="hist-title">به‌روزرسانی کیلومتر</div>'+
-          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigits(e.km)+' کیلومتر</div>'+
+          '<div class="hist-sub">'+jDateLabel(j)+' · '+faDigitsGrouped(e.km)+' کیلومتر</div>'+
         '</div>'+
         '<div class="hist-actions">'+
           '<button class="icon-btn" data-edit-km="'+e.id+'">'+
@@ -910,7 +997,7 @@ async function init(){
   await loadAll();
   recDate = setupDateTrio('rec-day','rec-month','rec-year');
   kmDate = setupDateTrio('km-day','km-month','km-year');
-  document.getElementById('rec-km').value = getCurrentKm() || '';
+  setGroupedValue('rec-km', getCurrentKm());
   renderAll();
 }
 init();
@@ -926,17 +1013,20 @@ function resetRecordForm(){
   document.getElementById('btn-save-record').textContent = 'ثبت تعویض';
   document.getElementById('btn-cancel-edit-record').style.display = 'none';
   document.getElementById('rec-note').value = '';
-  document.getElementById('rec-km').value = getCurrentKm() || '';
+  setGroupedValue('rec-km', getCurrentKm());
   var t = todayJalali();
   document.getElementById('rec-year').value = t[0];
   document.getElementById('rec-month').value = t[1];
   fillDaySelect(document.getElementById('rec-day'), t[0], t[1]);
   document.getElementById('rec-day').value = t[2];
+  var sel = document.getElementById('rec-service');
+  if(sel.options.length){ sel.selectedIndex = 0; }
+  updateRecHint();
 }
 
 document.getElementById('btn-save-record').addEventListener('click', async function(){
   var serviceId = document.getElementById('rec-service').value;
-  var kmVal = parseInt(document.getElementById('rec-km').value);
+  var kmVal = getFieldNumber('rec-km');
   if(!serviceId){ showToast('یک خدمت انتخاب کنید'); return; }
   if(!kmVal || kmVal < 0){ showToast('کیلومتر معتبر وارد کنید'); return; }
   var note = document.getElementById('rec-note').value.trim();
@@ -985,7 +1075,7 @@ function resetServiceForm(){
 
 document.getElementById('btn-save-service').addEventListener('click', async function(){
   var title = document.getElementById('svc-title').value.trim();
-  var interval = parseInt(document.getElementById('svc-interval').value);
+  var interval = getFieldNumber('svc-interval');
   if(!title){ showToast('عنوان خدمت را وارد کنید'); return; }
   if(!interval || interval <= 0){ showToast('حد مجاز کیلومتر را وارد کنید'); return; }
   if(editingServiceId){
@@ -1013,7 +1103,7 @@ document.getElementById('services-list').addEventListener('click', async functio
     if(!svc) return;
     editingServiceId = svc.id;
     document.getElementById('svc-title').value = svc.title;
-    document.getElementById('svc-interval').value = svc.interval;
+    setGroupedValue('svc-interval', svc.interval);
     document.getElementById('svc-form-label').textContent = 'ویرایش خدمت';
     document.getElementById('btn-save-service').textContent = 'ذخیره تغییرات';
     document.getElementById('btn-cancel-edit-service').style.display = '';
@@ -1046,7 +1136,7 @@ document.getElementById('history-list').addEventListener('click', async function
     document.getElementById('rec-service').value = rec.serviceId;
     updateRecHint();
     setTrioDate('rec-day','rec-month','rec-year', rec.dateISO);
-    document.getElementById('rec-km').value = rec.km;
+    setGroupedValue('rec-km', rec.km);
     document.getElementById('rec-note').value = rec.note || '';
     document.getElementById('rec-form-label').textContent = 'ویرایش تعویض';
     document.getElementById('btn-save-record').textContent = 'ذخیره تغییرات';
@@ -1058,7 +1148,7 @@ document.getElementById('history-list').addEventListener('click', async function
     var k = state.kmlog.find(function(x){ return x.id === editKm.dataset.editKm; });
     if(!k) return;
     editingKmId = k.id;
-    document.getElementById('km-value').value = k.km;
+    setGroupedValue('km-value', k.km);
     setTrioDate('km-day','km-month','km-year', k.dateISO);
     document.getElementById('km-sheet-title').textContent = 'ویرایش کیلومتر';
     document.getElementById('btn-confirm-km').textContent = 'ذخیره تغییرات';
@@ -1093,12 +1183,15 @@ document.getElementById('btn-open-km').addEventListener('click', function(){
   editingKmId = null;
   document.getElementById('km-sheet-title').textContent = 'به‌روزرسانی کیلومتر فعلی';
   document.getElementById('btn-confirm-km').textContent = 'ثبت';
-  document.getElementById('km-value').value = getCurrentKm() || '';
+  setGroupedValue('km-value', getCurrentKm());
   var t = todayJalali();
   document.getElementById('km-year').value = t[0];
   document.getElementById('km-month').value = t[1];
   fillDaySelect(document.getElementById('km-day'), t[0], t[1]);
   document.getElementById('km-day').value = t[2];
+  var st = document.getElementById('km-photo-status');
+  st.style.display = 'none';
+  st.textContent = '';
   document.getElementById('km-overlay').classList.add('show');
 });
 document.getElementById('btn-cancel-km').addEventListener('click', closeKmOverlay);
@@ -1106,7 +1199,7 @@ document.getElementById('km-overlay').addEventListener('click', function(e){
   if(e.target.id === 'km-overlay') closeKmOverlay();
 });
 document.getElementById('btn-confirm-km').addEventListener('click', async function(){
-  var val = parseInt(document.getElementById('km-value').value);
+  var val = getFieldNumber('km-value');
   if(!val || val < 0){ showToast('کیلومتر معتبر وارد کنید'); return; }
   if(editingKmId){
     var entry = state.kmlog.find(function(k){ return k.id === editingKmId; });
@@ -1304,6 +1397,77 @@ document.getElementById('vehicles-list').addEventListener('click', async functio
     } else {
       document.getElementById('vehicles-overlay').classList.remove('show');
     }
+  }
+});
+
+/* ============ km update: capture photo, best-effort OCR ============ */
+// Opens the phone camera to photograph the odometer, then tries to read the
+// number automatically via an on-device/browser OCR engine (loaded on demand,
+// requires an internet connection the first time). This is a best-effort
+// assist — always fills the field as an editable suggestion, never submits
+// silently, since digit recognition on odometers (especially mechanical ones)
+// isn't fully reliable.
+function fileToDataURL(file){
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(){ resolve(reader.result); };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function loadTesseract(){
+  if(window.Tesseract) return Promise.resolve();
+  if(window.__tesseractLoadPromise) return window.__tesseractLoadPromise;
+  window.__tesseractLoadPromise = new Promise(function(resolve, reject){
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/4.1.1/tesseract.min.js';
+    s.onload = function(){ resolve(); };
+    s.onerror = function(){ reject(new Error('tesseract load failed')); };
+    document.head.appendChild(s);
+  });
+  return window.__tesseractLoadPromise;
+}
+async function runOcr(dataUrl){
+  if(window.Tesseract && window.Tesseract.createWorker){
+    try{
+      var worker = await Tesseract.createWorker('eng');
+      try{ await worker.setParameters({ tessedit_char_whitelist: '0123456789' }); }catch(e){}
+      var result = await worker.recognize(dataUrl);
+      await worker.terminate();
+      return (result && result.data && result.data.text) || '';
+    }catch(e){ /* fall through to simple API */ }
+  }
+  var res2 = await Tesseract.recognize(dataUrl, 'eng');
+  return (res2 && res2.data && res2.data.text) || '';
+}
+
+document.getElementById('btn-km-photo').addEventListener('click', function(){
+  document.getElementById('km-photo-input').click();
+});
+document.getElementById('km-photo-input').addEventListener('change', async function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var statusEl = document.getElementById('km-photo-status');
+  statusEl.style.display = 'block';
+  statusEl.textContent = 'در حال بارگذاری موتور تشخیص عدد... (نیاز به اینترنت)';
+  try{
+    var dataUrl = await fileToDataURL(file);
+    await loadTesseract();
+    statusEl.textContent = 'در حال تشخیص عدد از روی عکس...';
+    var text = await runOcr(dataUrl);
+    var matches = (text.match(/\d+/g) || []).sort(function(a,b){ return b.length - a.length; });
+    var digits = matches[0];
+    if(digits){
+      setGroupedValue('km-value', parseInt(digits, 10));
+      statusEl.textContent = 'عدد پیشنهادی ثبت شد — لطفاً پیش از تأیید بررسی و در صورت نیاز اصلاح کنید';
+      showToast('عدد از روی عکس تشخیص داده شد');
+    } else {
+      statusEl.textContent = 'عددی در عکس تشخیص داده نشد؛ لطفاً به‌صورت دستی وارد کنید';
+    }
+  }catch(err){
+    statusEl.textContent = 'تشخیص خودکار ناموفق بود (این قابلیت نیاز به اینترنت دارد) — می‌توانید عدد را دستی وارد کنید';
+  } finally {
+    e.target.value = '';
   }
 });
 </script>
