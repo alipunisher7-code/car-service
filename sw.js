@@ -1,7 +1,7 @@
 // Bump this on every deploy that changes app files — changing the string
 // changes this file's bytes, which is what makes browsers notice an update
 // and run activate() below (which deletes every old-named cache).
-var CACHE_NAME = 'car-service-booklet-v3-ocr-fix-2026-08-20';
+var CACHE_NAME = 'car-service-booklet-v4-remove-ocr-2026-08-20';
 
 var STATIC_ASSETS = [
   './manifest.json',
